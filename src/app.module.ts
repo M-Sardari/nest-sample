@@ -1,17 +1,22 @@
-import { Module } from '@nestjs/common';
-import { AppController } from './controller/app.controller';
-import { AppService } from './service/app.service';
+import { Module } from "@nestjs/common";
+import { UserService } from "./service/user.service";
 import { TypeOrmModule } from "@nestjs/typeorm";
 import { ConfigModule } from "@nestjs/config";
-import { JoiConfig } from "./config";
-import { dataSource } from "./database";
+import { validationSchema } from "./config";
+import { dataSource, UserEntity } from "./database";
+import { UserController } from "./controller";
 
 @Module({
   imports: [
-    ConfigModule.forRoot(JoiConfig),
-    TypeOrmModule.forRoot(dataSource.options)
+    ConfigModule.forRoot({
+      isGlobal: true,
+      validationSchema: validationSchema
+    }),
+    TypeOrmModule.forRoot(dataSource.options),
+    TypeOrmModule.forFeature([UserEntity])
   ],
-  controllers: [AppController],
-  providers: [AppService],
+  controllers: [UserController],
+  providers: [UserService]
 })
-export class AppModule {}
+export class AppModule {
+}

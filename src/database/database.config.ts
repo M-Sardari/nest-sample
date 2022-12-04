@@ -1,7 +1,11 @@
 import { DataSource } from "typeorm";
 import { ConfigService } from "@nestjs/config";
+import {config} from "dotenv";
+import * as entities from './index'
 
 const configService = new ConfigService();
+
+config();
 
 export const dataSource = new DataSource({
   type: 'postgres',
@@ -12,6 +16,6 @@ export const dataSource = new DataSource({
   database: configService.get('POSTGRES_DB'),
   synchronize: true,
   logging: ['error'],
-  // entities:null,
+  entities:entities,
   // migrations:null
 })
