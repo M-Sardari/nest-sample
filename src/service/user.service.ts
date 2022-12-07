@@ -62,7 +62,7 @@ export class UserService {
   }
 
   private createAccessToken(id: number, email: string) {
-    return { accessToken: this.jwtService.sign({ id, email }) };
+    return { accessToken: this.jwtService.sign({ id, email }, { expiresIn: "1m" }) };
   }
 
   async login(body: LoginUserDto) {
@@ -75,6 +75,7 @@ export class UserService {
           HttpStatus.BAD_REQUEST
         );
       return this.createAccessToken(user.id, user.email);
+      // return "OK";
     } catch (error) {
       throw new HttpException(
         "Wrong credentials provided",
