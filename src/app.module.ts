@@ -6,6 +6,7 @@ import { validationSchema } from "./config";
 import { dataSource, UserEntity } from "./database";
 import { UserController } from "./controller";
 import { JwtModule } from "@nestjs/jwt";
+import { JwtHandler } from "./guard/jwt-handler.service";
 
 
 @Module({
@@ -16,10 +17,12 @@ import { JwtModule } from "@nestjs/jwt";
     }),
     TypeOrmModule.forRoot(dataSource.options),
     TypeOrmModule.forFeature([UserEntity]),
-    JwtModule.register({secret:process.env.JWT_SECRET_KEY})
+    JwtModule.register({
+      secret:process.env.JWT_SECRET_KEY,
+    })
   ],
   controllers: [UserController],
-  providers: [UserService]
+  providers: [UserService,JwtHandler]
 })
 export class AppModule {
 }

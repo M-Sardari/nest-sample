@@ -1,3 +1,7 @@
 import { LoginUserDto } from "./login-user.dto";
 
-export class Payload extends LoginUserDto{}
+export class Payload {
+  id:number;
+  email:string;
+
+}

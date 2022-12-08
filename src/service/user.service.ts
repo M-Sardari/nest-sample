@@ -7,13 +7,15 @@ import { CreateUserDto } from "../dto";
 import { UserEntity } from "../database";
 import { LoginUserDto } from "../dto/login-user.dto";
 import { JwtService } from "@nestjs/jwt";
+import { JwtHandler } from "../guard/jwt-handler.service";
+import * as process from "process";
 
 @Injectable()
 export class UserService {
   constructor(
     @InjectRepository(UserEntity)
     private usersRepository: Repository<UserEntity>,
-    private readonly jwtService: JwtService
+    private readonly jwtService: JwtHandler
   ) {
   }
 
@@ -61,8 +63,8 @@ export class UserService {
     }
   }
 
-  private createAccessToken(id: number, email: string) {
-    return { accessToken: this.jwtService.sign({ id, email }, { expiresIn: "1m" }) };
+  private async createAccessToken(id: number, email: string) {
+    return { accessToken: await this.jwtService.sign({ id, email }, '10m',process.env.JWT_PRV) };
   }
 
   async login(body: LoginUserDto) {

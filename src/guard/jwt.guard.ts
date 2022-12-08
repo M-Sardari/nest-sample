@@ -1,24 +1,39 @@
-import { CanActivate, ExecutionContext, HttpException, HttpStatus, Injectable } from "@nestjs/common";
+import {
+  CanActivate,
+  ExecutionContext,
+  HttpException,
+  HttpStatus,
+  Injectable,
+  UnauthorizedException
+} from "@nestjs/common";
 import { JwtService } from "@nestjs/jwt";
 import * as process from "process";
+import { JwtHandler } from "./jwt-handler.service";
 
 @Injectable()
-export class JwtGuard implements CanActivate{
-  constructor(private readonly jwtService:JwtService)
-  {}
-  canActivate(context: ExecutionContext): boolean {
-    try {
-      const request = context.switchToHttp().getRequest();
-      const authorization = request.headers['authorization'];
-      if (!authorization || Array.isArray(authorization)) {
-        throw new HttpException('Invalid Authorization Header',HttpStatus.UNAUTHORIZED);
+export class JwtGuard implements CanActivate {
+  constructor(private readonly jwtService: JwtHandler) {
+  }
+
+  async canActivate(context: ExecutionContext) {
+    let isValid = false;
+
+    const request = context.switchToHttp().getRequest();
+    const authorization = request.headers.authorization;
+    if (!authorization || Array.isArray(authorization)) {
+      isValid = false;
+    } else {
+      const token = authorization.replace("Bearer", "").trim();
+      const user = await this.jwtService.verify(token, process.env.JWT_PUB);
+      if (user === undefined) {
+        isValid = false;
+      } else {
+        request.user = user;
+        isValid = true;
       }
-      const token = authorization.replace('Bearer', '').trim();
-      const user = this.jwtService.verify(token);
-      request.user = user;
-      return true;
-    }catch (e) {
-      throw new HttpException(`Invalid Authorization Header and error is: ${e}`,HttpStatus.INTERNAL_SERVER_ERROR);
+      if (!isValid) throw new UnauthorizedException();
+
+      return isValid;
     }
   }
 }
