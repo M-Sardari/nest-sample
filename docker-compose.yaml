@@ -5,7 +5,9 @@ services:
     container_name: postgres
     image: postgres:latest
     ports:
-      - "5433:5433"
+      - "5432:5432"
+    expose:
+      - 5432
     volumes:
       - ./data/postgres:/data/postgres
     environment:
@@ -30,6 +32,22 @@ services:
       PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD}
     networks:
       - postgres
+
+  redis:
+    image: "redis:alpine"
+    container_name: redis
+    ports:
+      - "6379:6379"
+
+  redis-commander:
+      image: rediscommander/redis-commander:latest
+      container_name: redis-commander
+      environment:
+        - REDIS_HOSTS=local:redis:6379
+      ports:
+        - "8081:8081"
+      depends_on:
+        - redis
 
 networks:
   postgres:

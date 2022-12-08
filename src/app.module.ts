@@ -7,6 +7,9 @@ import { dataSource, UserEntity } from "./database";
 import { UserController } from "./controller";
 import { JwtModule } from "@nestjs/jwt";
 import { JwtHandler } from "./guard/jwt-handler.service";
+import { readFileSync } from "fs";
+import * as process from "process";
+import { RedisModule } from "gadin-redis";
 
 
 @Module({
@@ -18,11 +21,19 @@ import { JwtHandler } from "./guard/jwt-handler.service";
     TypeOrmModule.forRoot(dataSource.options),
     TypeOrmModule.forFeature([UserEntity]),
     JwtModule.register({
-      secret:process.env.JWT_SECRET_KEY,
+      privateKey: readFileSync(process.env.JWT_PRV),
+      publicKey: readFileSync(process.env.JWT_PUB)
+    }),
+
+    RedisModule.forRoot({
+      credentials: {
+        host: "localhost",
+        port: 6379
+      }
     })
   ],
   controllers: [UserController],
-  providers: [UserService,JwtHandler]
+  providers: [UserService, JwtHandler]
 })
 export class AppModule {
 }

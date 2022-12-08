@@ -11,7 +11,7 @@ export class UserController {
   constructor(private readonly userService: UserService) {}
 
 
-  @UseGuards(JwtGuard)
+  // @UseGuards(JwtGuard)
   @Post('register')
   async register(@Body() body: CreateUserDto): Promise<any> {
     return this.userService.register(body);
