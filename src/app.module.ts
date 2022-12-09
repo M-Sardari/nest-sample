@@ -1,4 +1,4 @@
-import { Module } from "@nestjs/common";
+import { Module, Scope } from "@nestjs/common";
 import { UserService } from "./service/user.service";
 import { TypeOrmModule } from "@nestjs/typeorm";
 import { ConfigModule } from "@nestjs/config";
@@ -10,6 +10,8 @@ import { JwtHandler } from "./guard/jwt-handler.service";
 import { readFileSync } from "fs";
 import * as process from "process";
 import { RedisModule } from "gadin-redis";
+import { APP_GUARD, APP_INTERCEPTOR } from "@nestjs/core";
+import { ResponseInterceptor } from "./interceptor/response.interceptor";
 
 
 @Module({
@@ -24,7 +26,6 @@ import { RedisModule } from "gadin-redis";
       privateKey: readFileSync(process.env.JWT_PRV),
       publicKey: readFileSync(process.env.JWT_PUB)
     }),
-
     RedisModule.forRoot({
       credentials: {
         host: "localhost",
@@ -33,7 +34,15 @@ import { RedisModule } from "gadin-redis";
     })
   ],
   controllers: [UserController],
-  providers: [UserService, JwtHandler]
+  providers: [
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: ResponseInterceptor,
+      scope: Scope.REQUEST,
+    },
+    UserService,
+    JwtHandler
+  ]
 })
 export class AppModule {
 }
