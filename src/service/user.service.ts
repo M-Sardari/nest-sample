@@ -66,7 +66,7 @@ export class UserService {
   }
 
   private async createAccessToken(id: number, email: string) {
-    const accessToken = { accessToken: await this.jwtService.sign({ id, email }, '10m', process.env.JWT_PRV) };
+    const accessToken = { accessToken: await this.jwtService.sign({ id, email }, '10m') };
     const key = `jwt-expire-${id}-${accessToken.accessToken}`;
     await this.redisService.set(key, `${accessToken.accessToken}`);
     // await this.redisService.expire(key,1670507424)
