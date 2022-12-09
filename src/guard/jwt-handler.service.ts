@@ -24,11 +24,4 @@ export class JwtHandler {
       algorithm: "ES256"
     });
   }
-
-  async verifyToken(token) {
-    const verify = await this.verify(token);
-    // if (verify === undefined) throw new UnauthorizedException();
-    if (verify === undefined) return null;
-    return verify;
-  }
 }

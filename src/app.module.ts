@@ -1,17 +1,17 @@
 import { Module, Scope } from "@nestjs/common";
-import { UserService } from "./service/user.service";
 import { TypeOrmModule } from "@nestjs/typeorm";
 import { ConfigModule } from "@nestjs/config";
 import { validationSchema } from "./config";
 import { dataSource, UserEntity } from "./database";
 import { UserController } from "./controller";
 import { JwtModule } from "@nestjs/jwt";
-import { JwtHandler } from "./guard/jwt-handler.service";
 import { readFileSync } from "fs";
 import * as process from "process";
 import { RedisModule } from "gadin-redis";
-import { APP_GUARD, APP_INTERCEPTOR } from "@nestjs/core";
-import { ResponseInterceptor } from "./interceptor/response.interceptor";
+import { APP_FILTER, APP_INTERCEPTOR } from "@nestjs/core";
+import { Exception, Response } from "./interceptors";
+import { JwtHandler } from "./guard";
+import { UserService } from "./service";
 
 
 @Module({
@@ -37,8 +37,12 @@ import { ResponseInterceptor } from "./interceptor/response.interceptor";
   providers: [
     {
       provide: APP_INTERCEPTOR,
-      useClass: ResponseInterceptor,
-      scope: Scope.REQUEST,
+      useClass: Response,
+      scope: Scope.REQUEST
+    },
+    {
+      provide: APP_FILTER,
+      useClass: Exception
     },
     UserService,
     JwtHandler

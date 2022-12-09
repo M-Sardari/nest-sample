@@ -1,11 +1,11 @@
-import { Body, Controller, Get, Post, UseGuards } from "@nestjs/common";
-import { UserService } from '../service/user.service';
+import { Body, Controller, Get, HttpStatus, NotFoundException, Post, UseGuards } from "@nestjs/common";
 import { CreateUserDto } from "../dto";
 import { ApiTags } from "@nestjs/swagger";
 import { LoginUserDto } from "../dto/login-user.dto";
-import { Jwt2Guard } from "../guard";
+import { JwtGuard } from "../guard";
 import { User } from "../decorator";
 import { Payload } from "../dto/payload";
+import { UserService } from "../service";
 
 @ApiTags('User')
 @Controller('user')
@@ -22,9 +22,17 @@ export class UserController {
     return this.userService.login(body);
   }
 
-  @UseGuards(Jwt2Guard)
+  @UseGuards(JwtGuard)
   @Get('info')
   async getInfo(@User() user:Payload){
-    return user;
+    throw new Error("YESSSSS")
+    // return user;
+  }
+
+  @UseGuards(JwtGuard)
+  @Get('info2')
+  async getInfo2(@User() user:Payload){
+    throw new NotFoundException("YESSSSS - 404")
+    // return user;
   }
 }

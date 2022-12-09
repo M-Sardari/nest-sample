@@ -4,9 +4,7 @@ import { DocumentBuilder, SwaggerModule } from "@nestjs/swagger";
 import { ValidationPipe } from "@nestjs/common";
 import { json } from "body-parser";
 import helmet from "helmet";
-import * as csrf from "csurf";
-import { RqIdentityMiddleware } from "./middleware/identity";
-import { JwtHandler } from "./guard/jwt-handler.service";
+import { RqInfoMiddleware } from "./middleware";
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -18,12 +16,8 @@ async function bootstrap() {
   //   methods:'GET',
   //   credentials:true
   // })
-
-  const identityMiddleware = new RqIdentityMiddleware(
-    app.get(JwtHandler),
-  );
-  app.use(identityMiddleware.use.bind(identityMiddleware));
-
+  const infoMiddleware = new RqInfoMiddleware();
+  app.use(infoMiddleware.use.bind(infoMiddleware));
 
   app.setGlobalPrefix('api');
   app.useGlobalPipes(
