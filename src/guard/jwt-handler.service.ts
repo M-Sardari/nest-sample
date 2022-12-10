@@ -1,7 +1,6 @@
 import { sign, verify } from "jsonwebtoken";
 import { Payload } from "../dto/payload";
 import { readFileSync } from "fs";
-import { HttpException, UnauthorizedException } from "@nestjs/common";
 
 export class JwtHandler {
   constructor() {
