@@ -1,11 +1,20 @@
-import { Body, Controller, Get, HttpStatus, NotFoundException, Post, UseGuards } from "@nestjs/common";
-import { CreateUserDto } from "../dto";
-import { ApiTags } from "@nestjs/swagger";
-import { LoginUserDto } from "../dto/login-user.dto";
+import {
+  Body,
+  Controller,
+  Get,
+  Post,
+  UploadedFile,
+  UseGuards,
+  UseInterceptors
+} from "@nestjs/common";
+import { CreateUserDto, Payload } from "../dto";
+import { ApiBearerAuth, ApiBody, ApiConsumes, ApiTags } from "@nestjs/swagger";
+import { LoginUserDto } from "../dto";
 import { JwtGuard } from "../guard";
 import { User } from "../decorator";
-import { Payload } from "../dto/payload";
 import { UserService } from "../service";
+import { FileInterceptor } from "@nestjs/platform-express";
+import { multerOptions } from "../config";
 
 @ApiTags('User')
 @Controller('user')
@@ -17,7 +26,7 @@ export class UserController {
     return this.userService.register(body);
   }
 
-  @Get('login')
+  @Post('login')
   async login(@Body() body: LoginUserDto): Promise<any> {
     return this.userService.login(body);
   }
@@ -29,10 +38,26 @@ export class UserController {
     // return user;
   }
 
+  @ApiBearerAuth()
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        file: {
+          type: 'string',
+          format: 'binary',
+        },
+      },
+    },
+  })
   @UseGuards(JwtGuard)
-  @Get('info2')
-  async getInfo2(@User() user:Payload){
-    throw new NotFoundException("YESSSSS - 404")
-    // return user;
+  @Post('avatar')
+  @UseInterceptors(FileInterceptor('file', multerOptions))
+  async uploadFile(
+    @UploadedFile() file: Express.Multer.File,
+    @User() user:Payload) {
+    return await this.userService.saveAvatar(file,user);
+    console.log({ file , user });
   }
 }

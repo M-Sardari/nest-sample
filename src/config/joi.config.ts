@@ -9,5 +9,9 @@ export const validationSchema = Joi.object({
     PGADMIN_DEFAULT_EMAIL: Joi.string().required(),
     PGADMIN_DEFAULT_PASSWORD: Joi.string().required(),
     JWT_PRV: Joi.string().required(),
-    JWT_PUB: Joi.string().required()
+    JWT_PUB: Joi.string().required(),
+    REDIS_HOST: Joi.string().required(),
+    REDIS_PORT: Joi.string().required(),
+    UPLOAD_LOCATION: Joi.string().required(),
+    MAX_FILE_SIZE: Joi.string().required(),
   });

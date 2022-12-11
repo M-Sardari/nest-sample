@@ -12,6 +12,7 @@ import { APP_FILTER, APP_INTERCEPTOR } from "@nestjs/core";
 import { Exception, Response } from "./interceptors";
 import { JwtHandler } from "./guard";
 import { UserService } from "./service";
+import { ServeStaticModule } from "@nestjs/serve-static";
 
 @Module({
   imports: [
@@ -27,17 +28,21 @@ import { UserService } from "./service";
     }),
     RedisModule.forRoot({
       credentials: {
-        host: "localhost",
-        port: 6379
+        host: process.env.REDIS_HOST,
+        port: +process.env.REDIS_PORT
       }
-    })
+    }),
+    // ServeStaticModule.forRoot({
+    //   serveRoot: '/api/v1/upload',
+    //   rootPath: process.env.UPLOAD_LOCATION,
+    // }),
+
   ],
   controllers: [UserController],
   providers: [
     {
       provide: APP_INTERCEPTOR,
       useClass: Response,
-      scope: Scope.REQUEST
     },
     {
       provide: APP_FILTER,

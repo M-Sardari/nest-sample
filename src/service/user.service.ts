@@ -1,15 +1,17 @@
-import { HttpException, HttpStatus, Inject, Injectable } from "@nestjs/common";
+import { ForbiddenException, HttpException, HttpStatus, Inject, Injectable } from "@nestjs/common";
 import { compare, hash } from "bcrypt";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
 import { PostgresErrorCode } from "../enum";
-import { CreateUserDto } from "../dto";
+import { CreateUserDto, Payload } from "../dto";
 import { UserEntity } from "../database";
 import { LoginUserDto } from "../dto/login-user.dto";
 import { JwtService } from "@nestjs/jwt";
 import { JwtHandler } from "../guard/jwt-handler.service";
 import * as process from "process";
 import { REDIS, RedisClient } from "gadin-redis";
+import fs, { existsSync, mkdirSync } from "fs";
+import { throttle } from "rxjs";
 
 @Injectable()
 export class UserService {
@@ -32,6 +34,15 @@ export class UserService {
     if (user) return user;
     throw new HttpException(
       "User with this email does not exist",
+      HttpStatus.NOT_FOUND
+    );
+  }
+
+  async findById(id: number) {
+    const user: UserEntity = await this.usersRepository.findOneBy({ id });
+    if (user) return user;
+    throw new HttpException(
+      "User does not exist",
       HttpStatus.NOT_FOUND
     );
   }
@@ -66,29 +77,28 @@ export class UserService {
   }
 
   private async createAccessToken(id: number, email: string) {
-    const accessToken = { accessToken: await this.jwtService.sign({ id, email }, '10m') };
+    const accessToken = { accessToken: await this.jwtService.sign({ id, email }, "10m") };
     const key = `jwt-expire-${id}-${accessToken.accessToken}`;
     await this.redisService.set(key, `${accessToken.accessToken}`);
     // await this.redisService.expire(key,1670507424)
-    return accessToken
+    return accessToken;
   }
 
   async login(body: LoginUserDto) {
-    try {
-      const user = await this.findByEmail(body.email);
-      const isPasswordMatched = await compare(body.password, user.password);
-      if (!isPasswordMatched)
-        throw new HttpException(
-          "Wrong credentials provided",
-          HttpStatus.BAD_REQUEST
-        );
-      return this.createAccessToken(user.id, user.email);
-      // return "OK";
-    } catch (error) {
+    const user = await this.findByEmail(body.email);
+    const isPasswordMatched = await compare(body.password, user.password);
+    if (!isPasswordMatched)
       throw new HttpException(
         "Wrong credentials provided",
         HttpStatus.BAD_REQUEST
       );
-    }
+    return this.createAccessToken(user.id, user.email);
+  }
+
+  async saveAvatar(file: Express.Multer.File, user: Payload) {
+    const userData:UserEntity = await this.findById(user.id);
+    userData.avatar = file.path;
+    await this.usersRepository.save(userData);
+    return userData;
   }
 }

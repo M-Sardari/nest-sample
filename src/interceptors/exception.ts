@@ -6,7 +6,7 @@ import {
 import { RqInfo } from "../interface";
 import { ApiExceptionInterface } from "../interface/exception";
 
-@Catch(HttpException)
+@Catch()
 export class Exception implements ExceptionFilter {
   constructor() {
   }
@@ -15,11 +15,11 @@ export class Exception implements ExceptionFilter {
     const http = host.switchToHttp();
     const req = http.getRequest();
     const res = http.getResponse();
-    const status: number = exception.getResponse
-      ? exception.getResponse().statusCode
+    const statusCode: number = exception
+      ? exception.status
       : HttpStatus.INTERNAL_SERVER_ERROR;
-    const error: string | string[] = exception.getResponse
-      ? exception.getResponse().message
+    const error: string | string[] = exception
+      ? exception.message
       : 'Unknown Error';
     const messages: string[] = typeof error === 'string' ? [error] : error;
 
@@ -28,11 +28,12 @@ export class Exception implements ExceptionFilter {
     const api :ApiExceptionInterface={
       request:request.id,
       timestamp:request.start,
-      status,
+      statusCode,
       messages,
     }
 
-    res.status(status).json(api);
+    res.status(statusCode
+    ).json(api);
   }
 
 }

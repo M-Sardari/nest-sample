@@ -1,6 +1,6 @@
 export interface ApiExceptionInterface {
     request: string;
     timestamp: number;
-    status: number;
+    statusCode: number;
     messages: string[];
 }
