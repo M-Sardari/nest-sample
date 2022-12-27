@@ -35,6 +35,7 @@
     "class-validator": "^0.13.2",
     "csurf": "^1.11.0",
     "dotenv": "^16.0.3",
+    "gadin-auth2": "0.0.1",
     "gadin-redis": "^0.0.1",
     "helmet": "^6.0.1",
     "joi": "^17.7.0",

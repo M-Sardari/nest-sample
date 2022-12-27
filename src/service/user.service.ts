@@ -1,17 +1,12 @@
-import { ForbiddenException, HttpException, HttpStatus, Inject, Injectable } from "@nestjs/common";
+import { HttpException, HttpStatus, Inject, Injectable } from "@nestjs/common";
 import { compare, hash } from "bcrypt";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
 import { PostgresErrorCode } from "../enum";
-import { CreateUserDto, Payload } from "../dto";
+import { CreateUserDto, LoginUserDto, Payload } from "../dto";
 import { UserEntity } from "../database";
-import { LoginUserDto } from "../dto/login-user.dto";
-import { JwtService } from "@nestjs/jwt";
-import { JwtHandler } from "../guard/jwt-handler.service";
-import * as process from "process";
 import { REDIS, RedisClient } from "gadin-redis";
-import fs, { existsSync, mkdirSync } from "fs";
-import { throttle } from "rxjs";
+import { JwtHandler } from "gadin-auth2";
 
 @Injectable()
 export class UserService {
@@ -77,7 +72,7 @@ export class UserService {
   }
 
   private async createAccessToken(id: number, email: string) {
-    const accessToken = { accessToken: await this.jwtService.sign({ id, email }, "10m") };
+    const accessToken = { accessToken: await this.jwtService.sign<Payload>({ id, email }) };
     const key = `jwt-expire-${id}-${accessToken.accessToken}`;
     await this.redisService.set(key, `${accessToken.accessToken}`);
     // await this.redisService.expire(key,1670507424)
@@ -96,7 +91,7 @@ export class UserService {
   }
 
   async saveAvatar(file: Express.Multer.File, user: Payload) {
-    const userData:UserEntity = await this.findById(user.id);
+    const userData: UserEntity = await this.findById(user.id);
     userData.avatar = file.path;
     await this.usersRepository.save(userData);
     return userData;

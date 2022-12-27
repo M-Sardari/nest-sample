@@ -10,9 +10,9 @@ import * as process from "process";
 import { RedisModule } from "gadin-redis";
 import { APP_FILTER, APP_INTERCEPTOR } from "@nestjs/core";
 import { Exception, Response } from "./interceptors";
-import { JwtHandler } from "./guard";
 import { UserService } from "./service";
 import { ServeStaticModule } from "@nestjs/serve-static";
+import { AuthModule } from "gadin-auth2";
 
 @Module({
   imports: [
@@ -22,16 +22,27 @@ import { ServeStaticModule } from "@nestjs/serve-static";
     }),
     TypeOrmModule.forRoot(dataSource.options),
     TypeOrmModule.forFeature([UserEntity]),
-    JwtModule.register({
-      privateKey: readFileSync(process.env.JWT_PRV),
-      publicKey: readFileSync(process.env.JWT_PUB)
-    }),
+    // JwtModule.register({
+    //   secret:"dsadas",
+    //   privateKey: readFileSync(process.env.JWT_PRV),
+    //   publicKey: readFileSync(process.env.JWT_PUB)
+    // }),
     RedisModule.forRoot({
       credentials: {
         host: process.env.REDIS_HOST,
         port: +process.env.REDIS_PORT
       }
     }),
+    AuthModule.forRoot({
+      PUB_KEY: readFileSync(process.env.JWT_PUB),
+      PRV_KEY: readFileSync(process.env.JWT_PRV),
+      signOptions: {
+        issuer: "SARDAR",
+        algorithm: "ES256",
+        expiresIn: "2m"
+      }
+
+    })
     // ServeStaticModule.forRoot({
     //   serveRoot: '/api/v1/upload',
     //   rootPath: process.env.UPLOAD_LOCATION,
@@ -49,7 +60,6 @@ import { ServeStaticModule } from "@nestjs/serve-static";
       useClass: Exception
     },
     UserService,
-    JwtHandler
   ]
 })
 export class AppModule {
